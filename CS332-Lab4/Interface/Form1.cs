@@ -27,7 +27,7 @@ namespace Interface
             InitializeComponent();
             pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             G = Graphics.FromImage(pictureBox1.Image);
-            G.Clear(Color.Bisque);
+            G.Clear(Color.White);
             PlotAxes();
             tabPage2.Enabled = false;
             tabPage3.Enabled = false;
@@ -119,11 +119,6 @@ namespace Interface
             comboBox3.Items.Clear();
             comboBox2.Items.Add("Смещение"); //0
             comboBox2.Items.Add("Поворот"); //1
-            comboBox2.Items.Add("Масштаб"); //2
-            if(Mode == 0)
-            {
-                comboBox2.Items.Add("Поиск точки пересечения"); //3
-            }
             comboBox2.SelectedIndex = 0;
 
             if (Mode == 0)
@@ -294,122 +289,6 @@ namespace Interface
                 panel1.Controls.Add(t1);
                 panel1.Controls.Add(b1);
             }
-
-            if (comboBox2.SelectedIndex == 2)
-            {
-                Label l2 = new Label();
-                l2.Text = "Масштаб: ";
-                l2.Location = new Point(10, 5);
-                l2.Size = new Size(120, 20);
-                l2.TextAlign = ContentAlignment.MiddleCenter;
-                panel1.Controls.Add(l2);
-
-                TextBox t2 = new TextBox();
-                t2.Name = "t2";
-                t2.Location = new Point(150, 5);
-                t2.Size = new Size(50, 20);
-                panel1.Controls.Add(t2);
-
-
-                Button b2 = new Button();
-                b2.Size = new Size(120, 23);
-                b2.Location = new Point(54, 346);
-                b2.Text = "Применить";
-                b2.Click += B2_Click;
-                panel1.Controls.Add(b2);
-            }
-            if(Mode == 0)
-            {
-                if (comboBox2.SelectedIndex == 3)
-                {
-                    Label l31 = new Label();
-                    l31.Text = "X1: ";
-                    l31.Name = "l31";
-                    l31.Size = new Size(50, 20);
-                    l31.TextAlign = ContentAlignment.MiddleCenter;
-                    l31.Location = new Point(10, 5);
-                    panel1.Controls.Add(l31);
-
-                    Label l32 = new Label();
-                    l32.Text = "Y1: ";
-                    l32.Name = "l32";
-                    l32.Size = new Size(50, 20);
-                    l32.TextAlign = ContentAlignment.MiddleCenter;
-                    l32.Location = new Point(120, 5);
-                    panel1.Controls.Add(l32);
-
-                    Label l33 = new Label();
-                    l33.Text = "X2: ";
-                    l33.Name = "l33";
-                    l33.Size = new Size(50, 20);
-                    l33.TextAlign = ContentAlignment.MiddleCenter;
-                    l33.Location = new Point(10, 40);
-                    panel1.Controls.Add(l33);
-
-                    Label l34 = new Label();
-                    l34.Text = "Y2: ";
-                    l34.Name = "l34";
-                    l34.Size = new Size(50, 20);
-                    l34.TextAlign = ContentAlignment.MiddleCenter;
-                    l34.Location = new Point(120, 40);
-                    panel1.Controls.Add(l34);
-
-                    Label l35 = new Label();
-                    l35.Text = "Результат: ";
-                    l35.Name = "l35";
-                    l35.Size = new Size(100, 20);
-                    l35.TextAlign = ContentAlignment.MiddleCenter;
-                    l35.Location = new Point(10, 60);
-                    panel1.Controls.Add(l35);
-
-                    Button b3 = new Button();
-                    b3.Name = "b3";
-                    b3.Size = new Size(120, 23);
-                    b3.Location = new Point(54, 346);
-                    b3.Text = "Применить";
-                    b3.Click += B3_Click;
-                    b3.Enabled = false;
-                    panel1.Controls.Add(b3);
-                }
-            }
-        }
-
-        private void B3_Click(object sender, EventArgs e)
-        {
-            Label l31 = FindControl(panel1, "l31") as Label;
-            Label l32 = FindControl(panel1, "l32") as Label;
-            Label l33 = FindControl(panel1, "l33") as Label;
-            Label l34 = FindControl(panel1, "l34") as Label;
-            Label l35 = FindControl(panel1, "l35") as Label;
-            int x1;
-            int y1;
-            int x2;
-            int y2;
-            int.TryParse(l31.Text.Split(' ')[1], out x1);
-            int.TryParse(l32.Text.Split(' ')[1], out y1);
-            int.TryParse(l33.Text.Split(' ')[1], out x2);
-            int.TryParse(l34.Text.Split(' ')[1], out y2);
-            Figure f2 = new Figure();
-            f2.Add(new CustomPoint(x1, y1));
-            f2.Add(new CustomPoint(x2, y2));
-            var res = Figure.Intersection(f, f2);
-            l35.Text = "Result: " + (res.x).ToString("F0") + "; " + (res.y).ToString("F0");
-			Graphics g = Graphics.FromImage(pictureBox1.Image);
-			Point[] points = new Point[2];
-			points[0] = new Point(ToPictureBoxX(x1), ToPictureBoxY(y1));
-			points[1] = new Point(ToPictureBoxX(x2), ToPictureBoxY(y2));
-			Pen pen = new Pen(Color.Blue);
-			g.DrawPolygon(pen, points);
-			pictureBox1.Invalidate();
-		}
-
-        private void B2_Click(object sender, EventArgs e)
-        {
-            TextBox t2 = FindControl(panel1, "t2") as TextBox;
-            double scale;
-            double.TryParse(t2.Text, out scale);
-            f = Figure.Scale(f, scale);
-            RedrawPolygon(f);
         }
 
         private void Cb1_CheckedChanged(object sender, EventArgs e)
@@ -479,7 +358,6 @@ namespace Interface
                 Pen pen = new Pen(Color.Red);
                 if (Mode == 1)
                 {
-                    //f.Add(new CustomPoint(e.X, e.Y));
                     f.Add(new CustomPoint(ToDekartX(e.X), ToDekartY(e.Y)));
                     g.DrawRectangle(pen, e.X, e.Y, 1, 1);
                     pictureBox1.Invalidate();
@@ -489,7 +367,6 @@ namespace Interface
                 {
                     if (f.Points().Count < 2) 
                     {
-						//f.Add(new CustomPoint(e.X, e.Y));
 						f.Add(new CustomPoint(ToDekartX(e.X), ToDekartY(e.Y)));
                         g.DrawRectangle(pen, e.X, e.Y, 1, 1);
                         pictureBox1.Invalidate();
@@ -523,11 +400,6 @@ namespace Interface
                         Label l12 = FindControl(panel1, "l12") as Label;
                         Button b1 = FindControl(panel1, "b1") as Button;
                         b1.Enabled = true;
-                        /*if (e.Button == MouseButtons.Left)
-                        {
-                            l11.Text = "X: " + (ToValidPoint(e.X, e.Y).X - 500).ToString();
-                            l12.Text = "Y: " + ToValidPoint(e.X, e.Y).Y.ToString();
-                        }*/
                     }
                 }
 

@@ -49,11 +49,5 @@ namespace CG4
         {
             return p.ToMatrix().Mult(Matrix.Rotation(x)).ToPoint();
         }
-
-        //Масштабирование
-        public static CustomPoint Scale(CustomPoint p, double size)
-        {
-            return p.ToMatrix().Mult(Matrix.Scale(size)).ToPoint();
-        }
 	}
 }

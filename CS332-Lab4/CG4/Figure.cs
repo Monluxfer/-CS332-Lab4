@@ -50,18 +50,6 @@ namespace CG4
             return res;
         }
 
-        //Масштабирование фигуры
-        //Если size == 0.5, то это уменьшение фигуры в 2 раза
-        public static Figure Scale(Figure f, double size)
-        {
-            Figure res = new Figure();
-            for (int i = 0; i < f.points.Count; i++)
-            {
-                res.Add(CustomPoint.Scale(f.points[i], size));
-            }
-            return res;
-        }
-
         //Поворот фигуры вокруг точки
         public static Figure RotationPoint(Figure f, CustomPoint p, int angle)
         {
@@ -102,28 +90,8 @@ namespace CG4
             return Figure.RotationPoint(f, tmp, angle);
         }
 
-        //поиск точки пересечения
-        public static CustomPoint Intersection(Figure f1, Figure f2)
-        {
-            if (f1.points.Count != f2.points.Count)
-                throw new Exception("this is not lines");
-            if (f1.points.Count != 2)
-                throw new Exception("this is not lines");
-            double tg1 = (f1.points[1].x - f1.points[0].x) / (f1.points[1].y - f1.points[0].y);
-            double tg2 = (f2.points[1].x - f2.points[0].x) / (f2.points[1].y - f2.points[0].y);
-            if (tg1 == tg2)
-                throw new Exception("Lines is parallel");
-            CustomPoint res = new CustomPoint();
-            res.x = -((f1.points[0].x * f1.points[1].y - f1.points[1].x * f1.points[0].y)
-                * (f2.points[1].x - f2.points[0].x) - (f2.points[0].x * f2.points[1].y - f2.points[1].x * f2.points[0].y)
-                * (f1.points[1].x - f1.points[0].x)) / ((f1.points[0].y - f1.points[1].y)
-                    * (f2.points[1].x - f2.points[0].x) - (f2.points[0].y - f2.points[1].y) * (f1.points[1].x - f1.points[0].x));
-            res.y = ((f2.points[0].y - f2.points[1].y) * (-res.x) - (f2.points[0].x * f2.points[1].y - f2.points[1].x * f2.points[0].y)) / (f2.points[1].x - f2.points[0].x);
-            return res;
-        }
-
         //положение точки относительно отрезка
-        public enum PointOverEdge { LEFT, RIGHT, BETWEEN, OUTSIDE }
+        public enum PointOverEdge { СЛЕВА, СПРАВА, НАОТРЕЗКЕ, НАПРЯМОЙ }
 
         //положение точки p относительно отрезка vw
         public static PointOverEdge Classification(CustomPoint p, CustomPoint v, CustomPoint w)
@@ -136,9 +104,9 @@ namespace CG4
             //подставим точку в уравнение прямой
             double f = a * p.x + b * p.y + c;
             if (f > 0)
-                return PointOverEdge.RIGHT; //точка лежит справа от отрезка
+                return PointOverEdge.СПРАВА; //точка лежит справа от отрезка
             if (f < 0)
-                return PointOverEdge.LEFT; //слева от отрезка
+                return PointOverEdge.СЛЕВА; //слева от отрезка
 
             double minX = Math.Min(v.x, w.x);
             double maxX = Math.Max(v.x, w.x);
@@ -146,30 +114,30 @@ namespace CG4
             double maxY = Math.Max(v.y, w.y);
 
             if (minX <= p.x && p.x <= maxX && minY <= p.y && p.y <= maxY)
-                return PointOverEdge.BETWEEN; //точка лежит на отрезке
-            return PointOverEdge.OUTSIDE; //точка лежит на прямой, но не на отрезке
+                return PointOverEdge.НАОТРЕЗКЕ; //точка лежит на отрезке
+            return PointOverEdge.НАПРЯМОЙ; //точка лежит на прямой, но не на отрезке
         }
 
-		private enum Position { TOUCHING, CROSSING, INESSENTIAL } //положение ребра
+		private enum Position { ПРИКАСАЕТСЯ, ПЕРЕСЕКАЕТСЯ, НЕОБХОДИМО } //положение ребра
 
         //тип ребра vw для точки a
         private static Position EdgeType(CustomPoint a, CustomPoint v, CustomPoint w)
         {
             switch (Classification(a, v, w))
             {
-                case PointOverEdge.LEFT:
-                    return ((v.y < a.y) && (a.y <= w.y)) ? Position.CROSSING : Position.INESSENTIAL;
-                case PointOverEdge.RIGHT:
-                    return ((w.y < a.y) && (a.y <= v.y)) ? Position.CROSSING : Position.INESSENTIAL;
-                case PointOverEdge.BETWEEN:
-                    return Position.TOUCHING;
+                case PointOverEdge.СЛЕВА:
+                    return ((v.y < a.y) && (a.y <= w.y)) ? Position.ПЕРЕСЕКАЕТСЯ : Position.НЕОБХОДИМО;
+                case PointOverEdge.СПРАВА:
+                    return ((w.y < a.y) && (a.y <= v.y)) ? Position.ПЕРЕСЕКАЕТСЯ : Position.НЕОБХОДИМО;
+                case PointOverEdge.НАОТРЕЗКЕ:
+                    return Position.ПРИКАСАЕТСЯ;
                 default:
-                    return Position.INESSENTIAL;
+                    return Position.НЕОБХОДИМО;
             }
         }
 
         //положение точки в многоугольнике
-        public enum PointInPolygon { INSIDE, OUTSIDE, BOUNDARY }
+        public enum PointInPolygon { ВНУТРИ, СНАРУЖИ, ГРАНИЦА }
 
         //положение точки в многоугольнике
         public PointInPolygon PointInFigure(CustomPoint a)
@@ -182,15 +150,15 @@ namespace CG4
 
                 switch (EdgeType(a, v, w))
                 {
-                    case Position.TOUCHING:
-                        return PointInPolygon.BOUNDARY;
-                    case Position.CROSSING:
+                    case Position.ПРИКАСАЕТСЯ:
+                        return PointInPolygon.ГРАНИЦА;
+                    case Position.ПЕРЕСЕКАЕТСЯ:
                         parity = !parity;
                         break;
                 }
             }
 
-			return parity ? PointInPolygon.OUTSIDE : PointInPolygon.INSIDE;
+			return parity ? PointInPolygon.СНАРУЖИ : PointInPolygon.ВНУТРИ;
 		}
 	}
 }
